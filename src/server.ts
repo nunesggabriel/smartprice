@@ -1,13 +1,16 @@
 import express from 'express';
+import { PrismaClient } from '@prisma/client';
 
 const port = 3000;
 const app = express();
+const prisma = new PrismaClient();
 
 
-app.get('/usuarios', (req, res) => {
-  res.send('Lista de usuários');
+app.get('/usuarios', async (req, res) => {
+  const usuarios = await prisma.usuario.findMany();
+  res.json(usuarios);
 });
 
 app.listen(port, () => {
-  console.log(`Servido em execução na porta ${port}`);
+  console.log(`Servidor em execução na porta ${port}`);
 });

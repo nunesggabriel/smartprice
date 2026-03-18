@@ -1,14 +1,110 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model ConfiguracaoPrecificacao {
+  id               Int      @id @default(autoincrement())
+  lucro_percentual Decimal? @db.Decimal(5, 2)
+  usuario_id       Int?
+  
+  // Relação: apontando para o model Usuario (singular)
+  usuario          Usuario? @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("configuracao_precificacao")
+}
+
+model ContasPagar {
+  id              Int       @id @default(autoincrement())
+  descricao       String    @db.VarChar(150)
+  valor           Decimal   @db.Decimal(10, 2)
+  data_lancamento DateTime? @default(now()) @db.Timestamp(6)
+  data_vencimento DateTime? @db.Date
+  data_pagamento  DateTime? @db.Date
+  status          String?   @db.VarChar(20)
+  usuario_id      Int?
+  
+  usuario         Usuario?  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("contas_pagar")
+}
+
+model Imposto {
+  id         Int      @id @default(autoincrement())
+  nome       String?  @db.VarChar(50)
+  percentual Decimal? @db.Decimal(5, 2)
+
+  @@map("impostos")
+}
+
+model Insumo {
+  id              Int              @id @default(autoincrement())
+  nome            String           @db.VarChar(100)
+  custo_unitario  Decimal          @db.Decimal(10, 2)
+  usuario_id      Int?
+  
+  usuario         Usuario?         @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  produto_insumos ProdutoInsumo[]
+
+  @@map("insumos")
+}
+
+model ProdutoInsumo {
+  id         Int      @id @default(autoincrement())
+  produto_id Int?
+  insumo_id  Int?
+  quantidade Decimal  @db.Decimal(10, 2)
+  
+  insumo     Insumo?  @relation(fields: [insumo_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  produto    Produto? @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("produto_insumos")
+}
+
+model Produto {
+  id              Int              @id @default(autoincrement())
+  referencia      String           @db.VarChar(100)
+  descricao       String?
+  custo_base      Decimal?         @default(0) @db.Decimal(10, 2)
+  usuario_id      Int?
+  criado_em       DateTime?        @default(now()) @db.Timestamp(6)
+  producao_mensal Int?
+  
+  produto_insumos ProdutoInsumo[]
+  usuario         Usuario?         @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  simulacoes      Simulacao[]
+
+  @@map("produtos")
+}
+
+model Simulacao {
+  id              Int       @id @default(autoincrement())
+  produto_id      Int?
+  preco_calculado Decimal?  @db.Decimal(10, 2)
+  margem_usada    Decimal?  @db.Decimal(5, 2)
+  criado_em       DateTime? @default(now()) @db.Timestamp(6)
+  
+  produto         Produto?  @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("simulacoes")
+}
+
+model Usuario {
+  id                        Int                        @id @default(autoincrement())
+  nome                      String                     @db.VarChar(100)
+  email                     String                     @unique @db.VarChar(150)
+  senha                     String                     @db.VarChar(150)
+  criado_em                 DateTime?                  @default(now()) @db.Timestamp(6)
+  
+  configuracoes_precificacao ConfiguracaoPrecificacao[]
+  contas_pagar              ContasPagar[]
+  insumos                   Insumo[]
+  produtos                  Produto[]
+
+  @@map("usuarios")
 }

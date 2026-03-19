@@ -18,6 +18,14 @@ app.post('/usuarios', async (req, res) => {
   const { nome, email, senha } = req.body;
 
   try {
+
+    const emailExistente = await prisma.usuario.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
+    if (emailExistente) {
+      return res.status(409).send({ message: 'Já existe um usuário com esse email' });
+    }
+
   await prisma.usuario.create({
     data: {
       nome,

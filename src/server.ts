@@ -87,6 +87,21 @@ app.delete('/usuarios/:id', async (req, res) => {
   res.status(200).send();
 });
 
+app.get('/usuarios/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try{
+  const usuario = await prisma.usuario.findUnique({
+    where: { id },
+  });
+  if (!usuario) {
+    return res.status(404).send({ message: 'Usuário não encontrado' });
+  }
+   res.status(200).send(usuario);
+}catch (error) {  return res.status(500).send({ message: 'Erro ao buscar usuário' });
+}
+});
+
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);
 });

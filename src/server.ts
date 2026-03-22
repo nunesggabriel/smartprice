@@ -65,6 +65,27 @@ app.put('/usuarios/:id', async (req, res) => {
     res.status(200).send();
 });
 
+app.delete('/usuarios/:id', async (req, res) => { 
+
+  const id = Number(req.params.id);
+
+  try {
+    const usuarioExistente = await prisma.usuario.findUnique({
+      where: { id },
+    });
+
+    if (!usuarioExistente) {
+      return res.status(404).send({ message: 'Usuário não encontrado' });
+    }
+
+    await prisma.usuario.delete({
+      where: { id },
+    });
+  } catch (error) {
+    return res.status(500).send({ message: 'Erro ao excluir usuário' });
+  }
+  res.status(200).send();
+});
 
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);

@@ -1,5 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import console = require('node:console');
+import log = require('node:console');
 
 const port = 3000;
 const app = express();
@@ -39,7 +41,29 @@ app.post('/usuarios', async (req, res) => {
   res.status(201).send({ message: 'Usuário criado com sucesso!' });
 });
 
+app.put('/usuarios/:id', async (req, res) => {
+  
+  const id = Number(req.params.id);
 
+  try {
+  const usuarioExistente = await prisma.usuario.findUnique({
+    where: { id },
+  });
+
+  if (!usuarioExistente) {
+    return res.status(404).send({ message: 'Usuário não encontrado' });
+  }
+
+  const data = {...req.body};
+
+  const usuario = await prisma.usuario.update({
+    where: { id },
+    data: data,
+  });
+}catch (error) {return res.status(500).send({ message: 'Erro ao atualizar usuário' });
+      }
+    res.status(200).send();
+});
 
 
 app.listen(port, () => {

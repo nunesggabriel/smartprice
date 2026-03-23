@@ -102,6 +102,23 @@ app.get('/usuarios/:id', async (req, res) => {
 }
 });
 
+app.post('/usuarios/login', async (req, res) => {
+  const { email, senha } = req.body;
+  try {
+    const usuario = await prisma.usuario.findFirst({
+      where: { email, senha },
+    });
+
+    if (!usuario) {
+      return res.status(401).send({ message: 'Email ou senha inválidos' });
+    }
+
+    res.status(200).send({ message: 'Login realizado com sucesso', usuario });
+  } catch (error) {
+    res.status(500).send({ message: 'Erro ao realizar login' });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);
 });

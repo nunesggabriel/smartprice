@@ -113,11 +113,115 @@ app.post('/usuarios/login', async (req, res) => {
       return res.status(401).send({ message: 'Email ou senha inválidos' });
     }
 
-    res.status(200).send({ message: 'Login realizado com sucesso', usuario });
+    res.status(200).send({ message: 'Login realizado com sucesso'});
   } catch (error) {
     res.status(500).send({ message: 'Erro ao realizar login' });
   }
 });
+
+// ------------- PRODUTOS -------------------
+
+app.post('/produtos', async (req, res) => {
+  const { referencia, descricao, custo_base, producao_mensal } = req.body;
+
+  try {
+    const referenciaExistente = await prisma.produto.findFirst({
+      where: { referencia: { equals: referencia, mode: 'insensitive' } },
+    });
+
+    if (referenciaExistente) {
+      return res.status(409).send({ message: 'Já existe um produto com essa referência' });
+    }
+
+    await prisma.produto.create({
+      data: {
+        referencia,
+        descricao,
+        custo_base,
+        producao_mensal,
+      },
+    });
+
+    return res.status(201).send({ message: 'Produto criado com sucesso!' });
+
+  } catch (error) {
+    console.error("Erro na rota /produtos:", error);
+    return res.status(500).send({ message: 'Erro ao criar produto' });
+  }
+});
+
+app.get('/produtos', async (req, res) => {
+  const produtos = await prisma.produto.findMany();
+  res.json(produtos);
+});
+
+app.get('/produtos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const produto = await prisma.produto.findUnique({
+      where: { id },
+    });
+    if (!produto) {
+      return res.status(404).send({ message: 'Produto não encontrado' });
+    }
+    res.status(200).send(produto);
+  } catch (error) {
+    console.error("Erro na rota GET /produtos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao buscar produto' });
+  }
+});
+
+app.put('/produtos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const produtoExistente = await prisma.produto.findUnique({
+      where: { id },
+    });
+
+    if (!produtoExistente) {
+      return res.status(404).send({ message: 'Produto não encontrado' });
+    }
+
+    const data = {...req.body};
+
+    const produto = await prisma.produto.update({
+      where: { id },
+      data: data,
+    });
+    res.status(200).send(produto);
+  } catch (error) {
+    console.error("Erro na rota PUT /produtos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao atualizar produto' });
+  }
+});
+
+app.delete('/produtos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const produtoExistente = await prisma.produto.findUnique({
+      where: { id },
+    });
+
+    if (!produtoExistente) {
+      return res.status(404).send({ message: 'Produto não encontrado' });
+    }
+
+    await prisma.produto.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Erro na rota DELETE /produtos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao excluir produto' });
+  }
+  res.status(200).send();
+});
+
+// ------------- CUSTOS PRODUTOS -------------------
+
+
+
 
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);

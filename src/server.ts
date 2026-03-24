@@ -220,7 +220,124 @@ app.delete('/produtos/:id', async (req, res) => {
 
 // ------------- CUSTOS PRODUTOS -------------------
 
+app.post('/insumos', async (req, res) => {
+    const { nome, custo_unitario } = req.body;
 
+    try{
+      const materialExistente = await prisma.insumo.findFirst({
+        where: { nome: { equals: nome, mode: 'insensitive' } },
+      });
+
+      if (materialExistente) {
+        return res.status(409).send({ message: 'Já existe um insumo com esse nome' });
+      }
+
+      await prisma.insumo.create({
+        data: {
+          nome,
+          custo_unitario,
+        },
+      });
+
+      return res.status(201).send({ message: 'Insumo criado com sucesso!' });
+    } catch (error) {
+      console.error("Erro na rota /insumos:", error);
+      return res.status(500).send({ message: 'Erro ao criar insumo' });
+    }
+  });
+  
+  app.get('/insumos', async (req, res) => {
+  const insumos = await prisma.insumo.findMany();
+  res.json(insumos);
+});
+
+app.get('/insumos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  try {
+    const insumo = await prisma.insumo.findUnique({
+      where: { id },
+    });
+    if (!insumo) {
+      return res.status(404).send({ message: 'Insumo não encontrado' });
+    }
+    res.status(200).send(insumo);
+  } catch (error) {
+    console.error("Erro na rota GET /insumos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao buscar insumo' });
+  }
+});
+
+
+app.put('/insumos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const insumoExistente = await prisma.insumo.findUnique({
+      where: { id },
+    });
+
+    if (!insumoExistente) {
+      return res.status(404).send({ message: 'Insumo não encontrado' });
+    }
+
+    const data = {...req.body};
+
+    const insumo = await prisma.insumo.update({
+      where: { id },
+      data: data,
+    });
+    res.status(200).send(insumo);
+  } catch (error) {
+    console.error("Erro na rota PUT /insumos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao atualizar insumo' });
+  }
+});
+
+
+app.delete('/insumos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const insumoExistente = await prisma.insumo.findUnique({
+      where: { id },
+    });
+
+    if (!insumoExistente) {
+      return res.status(404).send({ message: 'Insumo não encontrado' });
+    }
+
+    await prisma.insumo.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Erro na rota DELETE /insumos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao excluir insumo' });
+  }
+  res.status(200).send();
+});
+
+// ------------- DESPESAS -------------
+
+app.post('/contaspagar', async (req, res) => {
+    const { descricao, valor, data_vencimento, data_pagamento, status } = req.body;
+
+    try{
+        await prisma.contasPagar.create({
+        data: {
+          descricao,
+          valor,
+          data_vencimento,
+          data_pagamento,
+          status
+        },
+      });
+
+      return res.status(201).send({ message: 'Contas a pagar criada com sucesso!' });
+    } catch (error) {
+      console.error("Erro na rota /contaspagar:", error);
+      return res.status(500).send({ message: 'Erro ao criar contas a pagar' });
+    }
+  });
 
 
 app.listen(port, () => {

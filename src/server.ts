@@ -408,6 +408,107 @@ app.delete('/contaspagar/:id', async (req, res) => {
   res.status(200).send();
 });
 
+// ------------- IMPOSTOS -------------
+
+app.post('/impostos', async (req, res) => {
+    const { nome, percentual } = req.body;
+
+    
+    try{
+        await prisma.imposto.create({
+        data: {
+          nome,
+          percentual
+        },
+      });
+            return res.status(201).send({ message: 'Imposto criado com sucesso!' });
+    } catch (error) {
+      console.error("Erro na rota /impostos:", error);
+      return res.status(500).send({ message: 'Erro ao criar imposto' });
+    }
+  });
+
+  
+app.put('/impostos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const impostoExistente = await prisma.imposto.findUnique({
+      where: { id },
+    });
+
+    if (!impostoExistente) {
+      return res.status(404).send({ message: 'Imposto não encontrado' });
+    }
+
+    const data = {...req.body};
+
+    const imposto = await prisma.imposto.update({
+      where: { id },
+      data: data,
+    });
+    res.status(200).send(imposto);
+  } catch (error) {
+    console.error("Erro na rota PUT /impostos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao atualizar imposto' });
+  }
+});
+
+  app.get('/impostos', async (req, res) => {
+    const impostos = await prisma.imposto.findMany();
+    res.json(impostos);
+  });
+
+    app.get('/impostos', async (req, res) => {
+    const impostos = await prisma.imposto.findMany();
+    res.json(impostos);
+  });
+
+
+  app.get('/impostos/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    try {
+      const imposto = await prisma.imposto.findUnique({
+        where: { id },
+      });
+      if (!imposto) {
+        return res.status(404).send({ message: 'Imposto não encontrado' });
+      }
+      res.status(200).send(imposto);
+    } catch (error) {
+      console.error("Erro na rota GET /impostos/:id:", error);
+      return res.status(500).send({ message: 'Erro ao buscar imposto' });
+    }
+  });
+
+
+  app.delete('/impostos/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const impostoExistente = await prisma.imposto.findUnique({
+      where: { id },
+    });
+
+    if (!impostoExistente) {
+      return res.status(404).send({ message: 'Imposto não encontrado' });
+    }
+
+    await prisma.imposto.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Erro na rota DELETE /impostos/:id:", error);
+    return res.status(500).send({ message: 'Erro ao excluir imposto' });
+  }
+  res.status(200).send();
+});
+  
+
+
+
+
+
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);
 });

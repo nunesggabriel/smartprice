@@ -339,6 +339,74 @@ app.post('/contaspagar', async (req, res) => {
     }
   });
 
+  app.get('/contaspagar', async (req, res) => {
+    const contasPagar = await prisma.contasPagar.findMany();
+    res.json(contasPagar);
+  });
+
+  app.get('/contaspagar/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    try {
+      const contaPagar = await prisma.contasPagar.findUnique({
+        where: { id },
+      });
+      if (!contaPagar) {
+        return res.status(404).send({ message: 'Conta a pagar não encontrada' });
+      }
+      res.status(200).send(contaPagar);
+    } catch (error) {
+      console.error("Erro na rota GET /contaspagar/:id:", error);
+      return res.status(500).send({ message: 'Erro ao buscar conta a pagar' });
+    }
+  });
+
+app.put('/contaspagar/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const contaPagarExistente = await prisma.contasPagar.findUnique({
+      where: { id },
+    });
+
+    if (!contaPagarExistente) {
+      return res.status(404).send({ message: 'Conta a pagar não encontrada' });
+    }
+
+    const data = {...req.body};
+
+    const contaPagar = await prisma.contasPagar.update({
+      where: { id },
+      data: data,
+    });
+    res.status(200).send(contaPagar);
+  } catch (error) {
+    console.error("Erro na rota PUT /contaspagar/:id:", error);
+    return res.status(500).send({ message: 'Erro ao atualizar conta a pagar' });
+  }
+});
+
+
+app.delete('/contaspagar/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const contaPagarExistente = await prisma.contasPagar.findUnique({
+      where: { id },
+    });
+
+    if (!contaPagarExistente) {
+      return res.status(404).send({ message: 'Conta a pagar não encontrada' });
+    }
+
+    await prisma.contasPagar.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Erro na rota DELETE /contaspagar/:id:", error);
+    return res.status(500).send({ message: 'Erro ao excluir conta a pagar' });
+  }
+  res.status(200).send();
+});
 
 app.listen(port, () => {
   console.log(`Servidor em execução na porta ${port}`);

@@ -505,7 +505,78 @@ app.put('/impostos/:id', async (req, res) => {
 });
   
 
+// ------------- CONFIGURAÇÃO DE MARKUP -------------
 
+
+app.post('/configuracaoprecificacao', async (req, res) => {
+    const { lucro_percentual } = req.body;
+
+    
+    try{
+        await prisma.configuracaoPrecificacao.create({
+        data: {
+          lucro_percentual
+        },
+      });
+            return res.status(201).send({ message: 'Configuração de precificação criada com sucesso!' });
+    } catch (error) {
+      console.error("Erro na rota /configuracaoprecificacao:", error);
+      return res.status(500).send({ message: 'Erro ao criar configuração de precificação' });
+    }
+  });
+
+  
+app.put('/configuracaoprecificacao/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const configuracaoExistente = await prisma.configuracaoPrecificacao.findUnique({
+      where: { id },
+    });
+
+    if (!configuracaoExistente) {
+      return res.status(404).send({ message: 'Configuração de precificação não encontrada' });
+    }
+
+    const data = {...req.body};
+
+    const configuracao = await prisma.configuracaoPrecificacao.update({
+      where: { id },
+      data: data,
+    });
+    res.status(200).send(configuracao);
+  } catch (error) {
+    console.error("Erro na rota PUT /configuracaoprecificacao/:id:", error);
+    return res.status(500).send({ message: 'Erro ao atualizar configuração de precificação' });
+  }
+});
+
+  app.get('/configuracaoprecificacao', async (req, res) => {
+    const configuracoes = await prisma.configuracaoPrecificacao.findMany();
+    res.json(configuracoes);
+  });
+
+    app.delete('/configuracaoprecificacao/:id', async (req, res) => {
+  const id = Number(req.params.id);
+
+  try {
+    const configuracaoExistente = await prisma.configuracaoPrecificacao.findUnique({
+      where: { id },
+    });
+
+    if (!configuracaoExistente) {
+      return res.status(404).send({ message: 'Configuração de precificação não encontrada' });
+    }
+
+    await prisma.configuracaoPrecificacao.delete({
+      where: { id },
+    });
+  } catch (error) {
+    console.error("Erro na rota DELETE /configuracaoprecificacao/:id:", error);
+    return res.status(500).send({ message: 'Erro ao excluir configuração de precificação' });
+  }
+  res.status(200).send();
+});
 
 
 

@@ -30,11 +30,25 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req: AuthRequest, res) => {
   const { nome, custo_unitario } = req.body;
   const usuario_id = req.usuario!.id;
-  // ...
-  await prisma.insumo.create({
-    data: { nome, custo_unitario, usuario_id },
-  });
+
+  try {
+    const existe = await prisma.insumo.findFirst({
+      where: { nome: { equals: nome, mode: 'insensitive' } },
+    });
+
+    if (existe) return res.status(409).send({ message: 'Já existe um insumo com esse nome' });
+
+    const insumo = await prisma.insumo.create({
+      data: { nome, custo_unitario, usuario_id },
+    });
+
+    return res.status(201).send(insumo);
+  } catch (error) {
+    console.error('ERRO:', error);
+    return res.status(500).send({ message: 'Erro ao criar insumo' });
+  }
 });
+
 
 // PUT /insumos/:id
 router.put('/:id', async (req, res) => {

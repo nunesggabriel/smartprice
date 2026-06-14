@@ -15,7 +15,10 @@ import simulacaoRouter from './routes/simulacao';
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://smartprice-web-bq4q-jade.vercel.app',
+  credentials: true,
+}));
 app.use(express.json());
 
 // Rotas públicas (não exigem token)

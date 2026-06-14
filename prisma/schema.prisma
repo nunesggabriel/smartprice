@@ -12,8 +12,6 @@ model ConfiguracaoPrecificacao {
   id               Int      @id @default(autoincrement())
   lucro_percentual Decimal? @db.Decimal(5, 2)
   usuario_id       Int?
-  
-  // Relação: apontando para o model Usuario (singular)
   usuario          Usuario? @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("configuracao_precificacao")
@@ -28,7 +26,7 @@ model ContasPagar {
   data_pagamento  DateTime? @db.Date
   status          String?   @db.VarChar(20)
   usuario_id      Int?
-  
+  valor_pago      Decimal?  @db.Decimal(10, 2)
   usuario         Usuario?  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("contas_pagar")
@@ -43,12 +41,11 @@ model Imposto {
 }
 
 model Insumo {
-  id              Int              @id @default(autoincrement())
-  nome            String           @db.VarChar(100)
-  custo_unitario  Decimal          @db.Decimal(10, 2)
+  id              Int             @id @default(autoincrement())
+  nome            String          @db.VarChar(100)
+  custo_unitario  Decimal         @db.Decimal(10, 2)
   usuario_id      Int?
-  
-  usuario         Usuario?         @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario         Usuario?        @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   produto_insumos ProdutoInsumo[]
 
   @@map("insumos")
@@ -59,7 +56,6 @@ model ProdutoInsumo {
   produto_id Int?
   insumo_id  Int?
   quantidade Decimal  @db.Decimal(10, 2)
-  
   insumo     Insumo?  @relation(fields: [insumo_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   produto    Produto? @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -67,16 +63,15 @@ model ProdutoInsumo {
 }
 
 model Produto {
-  id              Int              @id @default(autoincrement())
-  referencia      String           @db.VarChar(100)
+  id              Int             @id @default(autoincrement())
+  referencia      String          @db.VarChar(100)
   descricao       String?
-  custo_base      Decimal?         @default(0) @db.Decimal(10, 2)
+  custo_base      Decimal?        @default(0) @db.Decimal(10, 2)
   usuario_id      Int?
-  criado_em       DateTime?        @default(now()) @db.Timestamp(6)
+  criado_em       DateTime?       @default(now()) @db.Timestamp(6)
   producao_mensal Int?
-  
   produto_insumos ProdutoInsumo[]
-  usuario         Usuario?         @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario         Usuario?        @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   simulacoes      Simulacao[]
 
   @@map("produtos")
@@ -88,23 +83,21 @@ model Simulacao {
   preco_calculado Decimal?  @db.Decimal(10, 2)
   margem_usada    Decimal?  @db.Decimal(5, 2)
   criado_em       DateTime? @default(now()) @db.Timestamp(6)
-  
   produto         Produto?  @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("simulacoes")
 }
 
 model Usuario {
-  id                        Int                        @id @default(autoincrement())
-  nome                      String                     @db.VarChar(100)
-  email                     String                     @unique @db.VarChar(150)
-  senha                     String                     @db.VarChar(150)
-  criado_em                 DateTime?                  @default(now()) @db.Timestamp(6)
-  
+  id                         Int                        @id @default(autoincrement())
+  nome                       String                     @db.VarChar(100)
+  email                      String                     @unique @db.VarChar(150)
+  senha                      String                     @db.VarChar(150)
+  criado_em                  DateTime?                  @default(now()) @db.Timestamp(6)
   configuracoes_precificacao ConfiguracaoPrecificacao[]
-  contas_pagar              ContasPagar[]
-  insumos                   Insumo[]
-  produtos                  Produto[]
+  contas_pagar               ContasPagar[]
+  insumos                    Insumo[]
+  produtos                   Produto[]
 
   @@map("usuarios")
 }

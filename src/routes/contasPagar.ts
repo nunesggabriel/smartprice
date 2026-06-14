@@ -30,13 +30,14 @@ router.get('/:id', async (req, res) => {
 
 // POST /contaspagar
 router.post('/', async (req: AuthRequest, res) => {
-  const { descricao, valor, data_vencimento, data_pagamento, status } = req.body;
+  const { descricao, valor, valor_pago, data_vencimento, data_pagamento, status } = req.body;
   const usuario_id = req.usuario!.id;
   try {
     const conta = await prisma.contasPagar.create({
       data: {
         descricao,
         valor,
+        valor_pago: valor_pago ?? null,
         data_vencimento: data_vencimento ? new Date(data_vencimento + 'T00:00:00') : null,
         data_pagamento: data_pagamento ? new Date(data_pagamento + 'T00:00:00') : null,
         status: status ?? 'pendente',
